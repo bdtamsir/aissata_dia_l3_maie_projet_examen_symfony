@@ -1,0 +1,219 @@
+
+<form id="commande-form" method="post" action="{{ path('commande_create') }}" style="margin: auto; width: 80%;">
+    <!-- Tableau principal -->
+    <table class="table table-bordered" style="width: 100%; text-align: center; border-collapse: collapse; margin-top: 20px; font-size: 18px;">
+        <thead>
+            <tr style="background-color: #f9f9f9;">
+                <th colspan="3" style="padding: 15px;">Détails du Client</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="padding: 10px;">
+                    <label for="client_id" class="form-label">ID du Client</label>
+                </td>
+                <td colspan="2">
+                    <input type="text" id="client_id" name="client_id" class="form-control" placeholder="ID du client" style="font-size: 18px; height: 40px;" required>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Tableau des articles -->
+    <table class="table table-bordered" style="width: 100%; text-align: center; border-collapse: collapse; margin-top: 20px; font-size: 18px;">
+        <thead>
+            <tr style="background-color: #f9f9f9;">
+                <th>Article</th>
+                <th>Quantité</th>
+                <th>Prix</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="articles-container">
+            <tr class="article-row">
+                <td>
+                    <select name="articles[0][id]" class="form-select" style="font-size: 18px; height: 40px;" required>
+                        <option value="">Choisir un article</option>
+                        {% for article in articles %}
+                            <option value="{{ article.id }}">{{ article.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <input type="number" name="articles[0][quantite]" class="form-control" style="font-size: 18px; height: 40px;" min="1" required>
+                </td>
+                <td>
+                    <input type="number" name="articles[0][prix]" class="form-control" style="font-size: 18px; height: 40px;" step="0.01" required>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger remove-article" style="font-size: 18px;">Supprimer</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Bouton pour ajouter un nouvel article -->
+    <div style="text-align: center; margin: 20px 0;">
+        <button type="button" class="btn btn-success add-article" style="font-size: 18px;">Ajouter un article</button>
+    </div>
+
+    <!-- Total -->
+    <div style="text-align: right; font-weight: bold; margin-bottom: 20px; font-size: 20px;">
+        Total : <span id="total" style="font-size: 24px;">0.00</span> €
+    </div>
+
+    <!-- Bouton de validation -->
+    <div style="text-align: center;">
+        <button type="submit" class="btn btn-primary" style="font-size: 18px; padding: 10px 20px;">Valider la Commande</button>
+    </div>
+</form>
+
+<!-- Script -->
+<script>
+    let articleIndex = 1;
+
+    // Ajouter un nouvel article
+    document.querySelector('.add-article').addEventListener('click', function () {
+        const container = document.getElementById('articles-container');
+        const newRow = document.createElement('tr');
+        newRow.classList.add('article-row');
+        newRow.innerHTML = `
+            <td>
+                <select name="articles[${articleIndex}][id]" class="form-select" style="font-size: 18px; height: 40px;" required>
+                    <option value="">Choisir un article</option>
+                    ${document.querySelector('[name="articles[0][id]"]').innerHTML}
+                </select>
+            </td>
+            <td>
+                <input type="number" name="articles[${articleIndex}][quantite]" class="form-control" style="font-size: 18px; height: 40px;" min="1" required>
+            </td>
+            <td>
+                <input type="number" name="articles[${articleIndex}][prix]" class="form-control" style="font-size: 18px; height: 40px;" step="0.01" required>
+            </td>
+            <td>
+                <button type="button" class="btn btn-danger remove-article" style="font-size: 18px;">Supprimer</button>
+            </td>
+        `;
+        container.appendChild(newRow);
+
+        // Ajouter l'événement pour supprimer cet article
+        newRow.querySelector('.remove-article').addEventListener('click', function () {
+            newRow.remove();
+        });
+
+        articleIndex++;
+    });
+
+    // Calculer le total dynamique
+    document.addEventListener('input', function () {
+        let total = 0;
+        document.querySelectorAll('[name^="articles"]').forEach(function (input) {
+            if (input.name.includes('[quantite]')) {
+                const index = input.name.match(/\d+/)[0];
+                const prixInput = document.querySelector(`[name="articles[${index}][prix]"]`);
+                if (prixInput) {
+                    const prix = parseFloat(prixInput.value) || 0;
+                    const quantite = parseInt(input.value) || 0;
+                    total += prix * quantite;
+                }
+            }
+        });
+        document.getElementById('total').textContent = total.toFixed(2);
+    });
+</script>
+
+
+
+<style>
+    /* Général */
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    .form-label {
+        font-weight: bold;
+    }
+
+    .btn {
+        border-radius: 4px;
+    }
+
+    /* Conteneur des articles */
+    #articles-container {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 15px;
+    }
+
+    .article-row {
+        padding: 10px 0;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .article-row:last-child {
+        border-bottom: none;
+    }
+
+    /* Boutons */
+    .btn-danger {
+        background-color: #dc3545;
+        color: #fff;
+        border: none;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        color: #fff;
+        border: none;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    /* Total */
+    #total {
+        font-weight: bold;
+        font-size: 1.5rem;
+        color: #007bff;
+    }
+
+    /* Alignement du tableau */
+    .align-items-center {
+        display: flex;
+        align-items: center;
+    }
+
+    /* Marges des colonnes */
+    .col-md-4, .col-md-2 {
+        margin-bottom: 10px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .article-row {
+            flex-direction: column;
+        }
+
+        .col-md-4, .col-md-2 {
+            width: 100%;
+        }
+    }
+</style>
+

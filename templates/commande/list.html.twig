@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des commandes{% endblock %}
+
+{% block body %}
+<h1>Liste des commandes</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Client</th>
+            <th>Total</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for commande in commandes %}
+            <tr>
+                <td>{{ commande.id }}</td>
+                <td>{{ commande.dateCommande|date('d/m/Y H:i') }}</td>
+                <td>{{ commande.client.nom }} {{ commande.client.prenom }}</td>
+                <td>{{ commande.total }}</td>
+                <td>
+                    <a href="/commande/{{ commande.id }}" class="btn btn-info btn-sm">Détails</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
